@@ -1,0 +1,9 @@
+#!/bin/bash
+# Sources a virtualenv, creating it if it doesn't exist
+
+if [[ ! -d ".pyenv/" ]]; then
+	virtualenv "./.pyenv"
+	pip install flask
+fi
+
+. ./.pyenv/bin/activate
