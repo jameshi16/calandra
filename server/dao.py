@@ -20,5 +20,11 @@ class UserDAO:
     def saveToken(self, studentNumber, token):
         pass
 
+    def getEvents(self, studentNumber):
+        pass
+
     def getToken(self, studentNumber):
+        pass
+
+    def getSession(self, studentNumber):
         pass

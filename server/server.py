@@ -1,9 +1,11 @@
-from flask import Flask, redirect, request
+from flask import Flask, redirect, request, session
 from dotenv import load_dotenv
 from pathlib import Path
 from datetime import datetime, timedelta
 from event import Event, get_external_events
 from util import pt_timedate_to_str
+from user import User
+from daoImpl import UserDAOImpl
 import requests
 import os
 app = Flask(__name__)
@@ -13,7 +15,7 @@ STUDENT_UNION_URL = "https://studentsunionucl.org/whats-on/json/1667084400/16679
 UCL_URL = "https://cms-feed.ucl.ac.uk/s/search.json?collection=drupal-meta-events&meta_FeedableSyndication=%22cd6bcf8d-393d-4e80-babb-1c73b2cb6c5f%22&start_rank=31ge_DateFilter=20221101&lt_DateFilter=20221201&num_ranks=500"
 
 # TODO: abstract this to work with multiple users
-token = "uclapi-user-4bc189d14ad8c6a-ffa9476e018c48f-ba6268f6ad1e2a2-dab3966954ff80b"
+token = ""
 
 dotenv_path = Path('./.env')
 load_dotenv(dotenv_path=dotenv_path)
@@ -42,6 +44,26 @@ def receive_callback():
     decoded = r.json()
 
     token = decoded['token']
+
+    # send request to oauth user
+    params = {"client_secret": client_secret, "token": token}
+    r = requests.get("https://uclapi.com/oauth/user/data", params=params)
+
+    decoded = r.json()
+
+    daoImpl = UserDAOImpl()
+    user = User(daoImpl, decoded["upi"])
+    user.loadDB()
+
+    if user.token != token:
+        user.token = token
+        # TODO: return a session UUID, and then give it to the database
+        # TODO: destroy
+        user.saveDB()
+    daoImpl.destroy()
+
+    print("for user {}, saved token {}".format(user.id, user.token))
+
     return token
 
 @app.route('/consolidated_timetable')
