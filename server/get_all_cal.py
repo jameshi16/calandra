@@ -3,6 +3,8 @@
 import requests
 import datetime
 
+from event import Event
+
 
 def increment_url(url, counter):
     return url[:-len(str(counter)) - 1] + '/' + str(counter)
@@ -75,28 +77,8 @@ def parse_ucl_jsondata(url):
     return events_ucl
 
 
-def get_external_events(su_url, ucl_url):
-    return parse_su_jsondata(su_url), parse_ucl_jsondata(ucl_url)
+def get_external_events_2(su_url, ucl_url):
+    return parse_su_jsondata(su_url) + parse_ucl_jsondata(ucl_url)
 
-
-def show_events(event_list):
-    for j in range(len(event_list)):
-        for i in range(len(event_list[j])):
-            print(event_list[j][i].show_attributes())
-
-
-class Event:
-    def __init__(self, title, start_date, end_date, soc, type):
-        self.title = title
-        self.start = start_date
-        self.end = end_date
-        self.soc = soc
-        self.type = type
-
-    def show_attributes(self):
-        return self.title + ' from ' + str(self.start) + ' to ' + str(self.end) + ' by ' + self.soc
-
-
-URL = "https://studentsunionucl.org/whats-on/json/1667084400/1667952000/list/0"
-URL_2 = 'https://cms-feed.ucl.ac.uk/s/search.json?collection=drupal-meta-events&meta_FeedableSyndication=%22cd6bcf8d-393d-4e80-babb-1c73b2cb6c5f%22&&ge_DateFilter=20221105'
-show_events(get_external_events(URL, URL_2))
+# URL = "https://studentsunionucl.org/whats-on/json/1667084400/1667952000/list/0"
+# URL_2 = 'https://cms-feed.ucl.ac.uk/s/search.json?collection=drupal-meta-events&meta_FeedableSyndication=%22cd6bcf8d-393d-4e80-babb-1c73b2cb6c5f%22&&ge_DateFilter=20221105'

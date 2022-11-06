@@ -17,7 +17,7 @@ ul {
         "timeslots-container main";
 }
 
-.weekdays, 
+.weekdays,
 .daynumbers {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -77,6 +77,7 @@ ul {
     z-index: 5;
     color: white;
     font-size: 12px;
+    width: 13%;
 }
 
 .slot-1 {

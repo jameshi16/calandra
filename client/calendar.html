@@ -9,11 +9,12 @@
     <title>Calendar</title>
 </head>
 <body>
-    <div class="Calendar">
-        <button type="button" class="Calendar-prevButton">Previous</button>
-        <h1 class="Calendar-title">November 2022</h1>
-        <button type="button" class="Calendar-nextButton">Save</button>
-    </div>
+  <div class="Calendar">
+    <h1 class="Calendar-title">November 2022</h1>
+    <h2 id="user">loading</h2>
+    <!-- <button type="button" class="Calendar-prevButton">Previous</button>
+         <button type="button" class="Calendar-nextButton">Save</button> -->
+  </div>
 
     <div class="calendar-container">
         <div class="header">
@@ -28,17 +29,17 @@
             </ul>
 
             <ul class="daynumbers">
-                <li>7</li>
-                <li>8</li>
-                <li>9</li>
-                <li>10</li>
-                <li>11</li>
-                <li>12</li>
-                <li>13</li>
+                <li>14</li>
+                <li>15</li>
+                <li>16</li>
+                <li>17</li>
+                <li>18</li>
+                <li>19</li>
+                <li>20</li>
             </ul>
         </div>
 
-        <div class="timeslots-container">
+        <div id="timeslots" class="timeslots-container">
             <ul class="timeslots">
                 <li>0000</li>
                 <li>0100</li>
@@ -67,7 +68,7 @@
             </ul>
         </div>
 
-        <div class="event-container">
+        <div id="event-container" class="event-container">
             <div class="slot slot-1">
                 <div class="event-status">
                 </div>

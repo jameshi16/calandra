@@ -3,10 +3,11 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from pathlib import Path
 from datetime import datetime, timedelta
-from event import Event, get_external_events
+from event import Event
 from util import pt_timedate_to_str
 from user import User
 from daoImpl import UserDAOImpl
+from get_all_cal import get_external_events_2
 
 import json
 import uuid
@@ -18,7 +19,7 @@ cors = CORS(app)
 # TODO: paginate these
 STUDENT_UNION_URL = "https://studentsunionucl.org/whats-on/json/1667084400/1667952000/list/5"
 UCL_URL = "https://cms-feed.ucl.ac.uk/s/search.json?collection=drupal-meta-events&meta_FeedableSyndication=%22cd6bcf8d-393d-4e80-babb-1c73b2cb6c5f%22&start_rank=31ge_DateFilter=20221101&lt_DateFilter=20221201&num_ranks=500"
-OWN_SITE = "http://localhost:8000"
+OWN_SITE = "https://uclhackathonstorageacc.z33.web.core.windows.net"
 
 dotenv_path = Path('./.env')
 load_dotenv(dotenv_path=dotenv_path)
@@ -96,7 +97,7 @@ def consolidated_timetable():
     # code will have meaningful data
 
     # Gets events
-    for i in range(7, 14):
+    for i in range(6, 14):
         date = datetime.now()
         date += timedelta(days=i)
         params["date"] = date.strftime("%Y-%m-%d")
@@ -119,7 +120,8 @@ def consolidated_timetable():
             e = Event(title, start_time, end_time, tag, 0)
             events.append(e.toJSON())
 
-    events += get_external_events(STUDENT_UNION_URL, UCL_URL)
+
+    events += [e.toJSON() for e in get_external_events_2(STUDENT_UNION_URL, UCL_URL)]
 
     # Gets user information
     params = {
