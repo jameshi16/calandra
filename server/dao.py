@@ -17,6 +17,9 @@ class UserDAO:
     def getUser(self, studentNumber):
         pass
 
+    def getUserBySession(self, session):
+        pass
+
     def saveToken(self, studentNumber, token):
         pass
 

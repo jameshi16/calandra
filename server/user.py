@@ -24,7 +24,7 @@ class User:
             self.dao.saveToken(self.id, self.token)
 
         if self.session != None:
-            self.dao.saveSession(self.session)
+            self.dao.saveSession(self.id, self.session)
 
     def loadDB(self):
         if not self.dao.doesUserExist(self.id):
@@ -36,3 +36,11 @@ class User:
         if events != None:
             data = json.loads(self.dao.getEvents(self.id))
             self.events = [Event(d['title'], d['start'], d['end'], d['tag'], d['event_type']) for d in data]
+
+    def loadFromSessionDB(self, session):
+        user = self.dao.getUserBySession(session)
+        if user == ():
+            return
+
+        self.id = user[0]
+        self.loadDB() # TODO: yes, there is now extra time. idc

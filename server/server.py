@@ -1,4 +1,4 @@
-from flask import Flask, redirect, request, session
+from flask import Flask, redirect, request, session, abort
 from dotenv import load_dotenv
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -6,6 +6,8 @@ from event import Event, get_external_events
 from util import pt_timedate_to_str
 from user import User
 from daoImpl import UserDAOImpl
+
+import uuid
 import requests
 import os
 app = Flask(__name__)
@@ -22,11 +24,11 @@ load_dotenv(dotenv_path=dotenv_path)
 
 client_id = os.environ["CLIENT_ID"]
 client_secret = os.environ["CLIENT_SECRET"]
-url = f"https://uclapi.com/oauth/authorise/?client_id={client_id}&state=1"
+oauth_url = f"https://uclapi.com/oauth/authorise/?client_id={client_id}&state=1"
 
 @app.route('/login')
 def uclapi_login():
-    return redirect(url)
+    return redirect(oauth_url)
 
 
 @app.route('/callback')
@@ -55,25 +57,46 @@ def receive_callback():
     user = User(daoImpl, decoded["upi"])
     user.loadDB()
 
-    if user.token != token:
-        user.token = token
-        # TODO: return a session UUID, and then give it to the database
-        # TODO: destroy
-        user.saveDB()
+    user.token = token
+    user.session = str(uuid.uuid4())
+    user.saveDB()
     daoImpl.destroy()
 
-    print("for user {}, saved token {}".format(user.id, user.token))
+    print("for user {}, saved token {}, session {}".format(user.id, user.token, user.session))
 
-    return token
+    return user.session
 
 @app.route('/consolidated_timetable')
 def consolidated_timetable():
+    session = request.args.get('session', '')
+    if session == '':
+        abort(401)
+
+    # TODO: ideally, this should be balanced in a queue. hackathon.
+    daoImpl = UserDAOImpl()
+    user = User(daoImpl, None)
+    user.loadFromSessionDB(session)
+    token = None
+
+    if user.session != session:
+        print("invalid session {}", session)
+        daoImpl.destroy
+        abort(401)
+    else:
+        token = user.token
+        daoImpl.destroy
+
     params = {"token": token,
               "client_secret": client_secret,
               "date": None}
 
     events = []
 
+    # TODO: get @ngenethlis to change his search range
+    # to 7 to 14 days from now, so that this part of the
+    # code will have meaningful data
+
+    # Gets events
     for i in range(7, 14):
         date = datetime.now()
         date += timedelta(days=i)
@@ -84,7 +107,7 @@ def consolidated_timetable():
 
         if not res["ok"]:
             print("error retrieving personal timetable")
-            abort(404)
+            redirect(oauth_url)
 
         slots = res["timetable"][params["date"]]
         for j in range(len(slots)):
@@ -98,4 +121,24 @@ def consolidated_timetable():
             events.append(e.toJSON())
 
     events += get_external_events(STUDENT_UNION_URL, UCL_URL)
-    return events
+
+    # Gets user information
+    params = {
+        "client_secret": client_secret,
+        "token": token
+    }
+    r = requests.get("https://uclapi.com/oauth/user/data", params)
+
+    # TODO: plaster r.status_code all over the place
+    if r.status_code != 200:
+        abort(503)
+
+    data = r.json()
+    if not data["ok"]:
+        redirect(oauth_url)
+
+    return {
+        "name": data["given_name"],
+        "department": data["department"],
+        "events": events
+    }

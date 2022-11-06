@@ -1,4 +1,5 @@
 # util.py - Utility functions
+from datetime import datetime
 
 # date: Will only extract year, month, day
 # time_str: will extract hour & minute

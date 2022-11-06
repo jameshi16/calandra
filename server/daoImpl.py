@@ -48,8 +48,17 @@ class UserDAOImpl(UserDAO):
         res = self.cur.execute(f"SELECT * FROM {self.table_name} WHERE userid=?", (studentNumber,))
         return res.fetchone()
 
+    def getUserBySession(self, session):
+        res = self.cur.execute(f"SELECT COUNT(*) FROM {self.table_name} WHERE session=?", (session,))
+        if not res.fetchone()[0]:
+            return ()
+
+        res = self.cur.execute(f"SELECT * FROM {self.table_name} WHERE session=?", (session,))
+        return res.fetchone()
+
     def saveSession(self, studentNumber, session):
-        res = self.cur.execute(f"UPDATE {self.table_name} SET session={session} WHERE userid=?", (studentNumber,))
+        res = self.cur.execute(f"UPDATE {self.table_name} SET session=? WHERE userid=?", (session, studentNumber))
+        self.con.commit()
 
     def saveToken(self, studentNumber, token):
         res = self.cur.execute(f"UPDATE {self.table_name} SET token=? WHERE userid=?", (token, studentNumber))
