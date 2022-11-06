@@ -5,8 +5,6 @@ import datetime
 
 
 def increment_url(url, counter):
-    print(url, counter)
-    print(url[:-len(str(counter)) - 1])
     return url[:-len(str(counter)) - 1] + '/' + str(counter)
 
 
@@ -35,39 +33,31 @@ def parse_su_jsondata(url):
     counter = 0
     current_date = datetime.date.today()
     next_week_date = current_date + datetime.timedelta(7)
-    events = []
-    event_date = current_date
-    while counter < 3:
+    events_su = []
+    for counter in range(5):
         data = exception_handling(url)
         for i in range(len(data)):
             event_date = datetime.date.fromtimestamp(int(data[i]['field_date_range_value']))
-            # print(current_date,event_date,next_week_date)
-            # print(current_date <= event_date <= next_week_date)
             if current_date <= event_date <= next_week_date:  # date in correct range
                 title = (data[i]['title'])
                 start = datetime.datetime.fromtimestamp(int(data[i]['field_date_range_value']))
                 end = datetime.datetime.fromtimestamp(int(data[i]['field_date_range_end_value']))
                 soc = (data[i]['field_event_owner_group'])
-                e = Event(title, start, end, soc)
-                #print(e.start)
-                events.append(e)
-            # elif event_date > next_week_date:
-            #     return events
-        counter += 1
+                type = 2
+                e = Event(title, start, end, soc, type)
+                events_su.append(e)
         url = increment_url(url, counter)
-    return events
+    return events_su
 
 
 def parse_ucl_jsondata(url):
     current_date = datetime.datetime.now()
-    events = []
-    event_date = convert(current_date)
+    events_ucl = []
     next_week_date = current_date + datetime.timedelta(7)
     next_week_date = convert(next_week_date)
     current_date = convert(current_date)
-    event_date = current_date
     counter = 20221104
-    while counter < 20221110:
+    for counter in range(20221104, 20221110):
         data = exception_handling(url)
         for i in range(len(data)):
             cleaned_data = data['response']['resultPacket']['results']
@@ -77,39 +67,36 @@ def parse_ucl_jsondata(url):
                 title = cleaned_data[i]['title']
                 end = cleaned_data[i]['metaData']['d']
                 soc = cleaned_data[i]['metaData']['UclOrgUnit']
-                e = Event(title, start, end, soc)
-                events.append(e)
+                type = 1
+                e = Event(title, start, end, soc, type)
+                events_ucl.append(e)
         counter += 1
         increment_url(url, counter)
-        # elif event_date > next_week_date:
-    return events
+    return events_ucl
 
 
 def get_external_events(su_url, ucl_url):
-    list = []
-    list.append(parse_su_jsondata(su_url))
-    list.append(parse_ucl_jsondata(ucl_url))
-    return list
+    return parse_su_jsondata(su_url), parse_ucl_jsondata(ucl_url)
+
+
+def show_events(event_list):
+    for j in range(len(event_list)):
+        for i in range(len(event_list[j])):
+            print(event_list[j][i].show_attributes())
 
 
 class Event:
-    def __init__(self, title, start_date, end_date, soc):
+    def __init__(self, title, start_date, end_date, soc, type):
         self.title = title
         self.start = start_date
         self.end = end_date
         self.soc = soc
+        self.type = type
+
+    def show_attributes(self):
+        return self.title + ' from ' + str(self.start) + ' to ' + str(self.end) + ' by ' + self.soc
 
 
 URL = "https://studentsunionucl.org/whats-on/json/1667084400/1667952000/list/0"
-
 URL_2 = 'https://cms-feed.ucl.ac.uk/s/search.json?collection=drupal-meta-events&meta_FeedableSyndication=%22cd6bcf8d-393d-4e80-babb-1c73b2cb6c5f%22&&ge_DateFilter=20221105'
-
-# print(get_external_events(URL, URL_2)[0][0].start)
-#
-events=get_external_events(URL, URL_2)
-
-for i in range(len(events[0])):
-    print(events[0][i].title)
-    print(events[1][i].title)
-
-
+show_events(get_external_events(URL, URL_2))
