@@ -20,7 +20,7 @@ class UserDAOImpl(UserDAO):
         self.con.close()
 
     def saveEvents(self, studentNumber, events):
-        res = self.cur.execute(f"UPDATE {self.table_name} SET events={events} WHERE userid=?", ({studentNumber},))
+        res = self.cur.execute(f"UPDATE {self.table_name} SET events=? WHERE userid=?", (events, studentNumber))
         self.con.commit()
 
     def createNewUser(self, studentNumber):

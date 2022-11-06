@@ -18,7 +18,7 @@ class User:
 
         if self.events != None:
             serialized = [j.toJSON() for j in self.events]
-            self.dao.saveEvents(json.dumps(serialized))
+            self.dao.saveEvents(self.id, json.dumps(serialized))
 
         if self.token != None:
             self.dao.saveToken(self.id, self.token)

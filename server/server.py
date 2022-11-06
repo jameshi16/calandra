@@ -1,4 +1,4 @@
-from flask import Flask, redirect, request, session, abort
+from flask import Flask, redirect, request, session, abort, jsonify, make_response
 from dotenv import load_dotenv
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -7,6 +7,7 @@ from util import pt_timedate_to_str
 from user import User
 from daoImpl import UserDAOImpl
 
+import json
 import uuid
 import requests
 import os
@@ -15,9 +16,6 @@ app = Flask(__name__)
 # TODO: paginate these
 STUDENT_UNION_URL = "https://studentsunionucl.org/whats-on/json/1667084400/1667952000/list/5"
 UCL_URL = "https://cms-feed.ucl.ac.uk/s/search.json?collection=drupal-meta-events&meta_FeedableSyndication=%22cd6bcf8d-393d-4e80-babb-1c73b2cb6c5f%22&start_rank=31ge_DateFilter=20221101&lt_DateFilter=20221201&num_ranks=500"
-
-# TODO: abstract this to work with multiple users
-token = ""
 
 dotenv_path = Path('./.env')
 load_dotenv(dotenv_path=dotenv_path)
@@ -33,8 +31,6 @@ def uclapi_login():
 
 @app.route('/callback')
 def receive_callback():
-    global token
-
     # extract query parameters
     code = request.args.get('code', '')
 
@@ -107,14 +103,14 @@ def consolidated_timetable():
 
         if not res["ok"]:
             print("error retrieving personal timetable")
-            redirect(oauth_url)
+            abort(403)
 
         slots = res["timetable"][params["date"]]
         for j in range(len(slots)):
             slot = slots[j]
             start_time = pt_timedate_to_str(date, slot['start_time'])
             end_time = pt_timedate_to_str(date, slot['end_time'])
-            tag = slot['module']['module_id']
+            tag = slot['module']['module_id'].lower()
             title = slot['session_title']
 
             e = Event(title, start_time, end_time, tag, 0)
@@ -135,10 +131,42 @@ def consolidated_timetable():
 
     data = r.json()
     if not data["ok"]:
-        redirect(oauth_url)
+        abort(403)
 
-    return {
+    # user json
+    u_events = [e.toJSON() for e in user.events]
+
+    resp = make_response(jsonify({
         "name": data["given_name"],
         "department": data["department"],
-        "events": events
-    }
+        "events": events,
+        "user_events": u_events
+    }))
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    resp.headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept'
+    resp.headers['Access-Control-Allow-Methods'] = 'PUT, POST, GET, DELETE, OPTIONS'
+    resp.headers['Content-Security-Policy'] = ''
+    return resp, 200
+
+@app.route('/save_events', methods=['POST'])
+def save_events():
+    session = request.args.get('session', '')
+    if session == '':
+        abort(403)
+
+    # can't use flask here, it doesn't like lists
+    data = json.loads(request.get_data())
+
+    daoImpl = UserDAOImpl()
+    user = User(daoImpl, None)
+    user.loadFromSessionDB(session)
+
+    events = []
+    for d in data:
+        e = Event(d["title"], d["start"], d["end"], d["tag"], d["event_type"])
+        events.append(e)
+
+    user.events = events
+    user.saveDB()
+    daoImpl.destroy()
+    return json.dumps({"ok": True}), 200, {'ContentType': 'application/json'}
