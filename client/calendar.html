@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
+    <meta http-equiv="Access-Control-Allow-Origin" content="*">
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,9 +12,9 @@
     <div class="Calendar">
         <button type="button" class="Calendar-prevButton">Previous</button>
         <h1 class="Calendar-title">November 2022</h1>
-        <button type="button" class="Calendar-nextButton">Next</button>
+        <button type="button" class="Calendar-nextButton">Save</button>
     </div>
-    
+
     <div class="calendar-container">
         <div class="header">
             <ul class="weekdays">
@@ -74,5 +75,10 @@
             </div>
         </div>
     </div>
+
+    <script type="text/javascript" src="/index.js"></script>
+    <script>
+     loadEvents();
+    </script>
 </body>
 </html>

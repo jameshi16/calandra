@@ -1,4 +1,5 @@
 from flask import Flask, redirect, request, session, abort, jsonify, make_response
+from flask_cors import CORS
 from dotenv import load_dotenv
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -12,10 +13,12 @@ import uuid
 import requests
 import os
 app = Flask(__name__)
+cors = CORS(app)
 
 # TODO: paginate these
 STUDENT_UNION_URL = "https://studentsunionucl.org/whats-on/json/1667084400/1667952000/list/5"
 UCL_URL = "https://cms-feed.ucl.ac.uk/s/search.json?collection=drupal-meta-events&meta_FeedableSyndication=%22cd6bcf8d-393d-4e80-babb-1c73b2cb6c5f%22&start_rank=31ge_DateFilter=20221101&lt_DateFilter=20221201&num_ranks=500"
+OWN_SITE = "http://localhost:8000"
 
 dotenv_path = Path('./.env')
 load_dotenv(dotenv_path=dotenv_path)
@@ -60,7 +63,7 @@ def receive_callback():
 
     print("for user {}, saved token {}, session {}".format(user.id, user.token, user.session))
 
-    return user.session
+    return redirect(OWN_SITE + '/calendar.html?session=' + user.session)
 
 @app.route('/consolidated_timetable')
 def consolidated_timetable():
@@ -134,7 +137,9 @@ def consolidated_timetable():
         abort(403)
 
     # user json
-    u_events = [e.toJSON() for e in user.events]
+    u_events = None
+    if user.events is not None:
+        u_events = [e.toJSON() for e in user.events]
 
     resp = make_response(jsonify({
         "name": data["given_name"],
