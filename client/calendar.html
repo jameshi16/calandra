@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Access-Control-Allow-Origin" content="*">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <title>Calendar</title>
+</head>
+<body>
+  <div class="Calendar">
+    <h1 class="Calendar-title">November 2022</h1>
+    <h2 id="user">loading</h2>
+    <!-- <button type="button" class="Calendar-prevButton">Previous</button>
+         <button type="button" class="Calendar-nextButton">Save</button> -->
+  </div>
+
+    <div class="calendar-container">
+        <div class="header">
+            <ul class="weekdays">
+                <li>Sunday</li>
+                <li>Monday</li>
+                <li>Tuesday</li>
+                <li>Wednesday</li>
+                <li>Thursday</li>
+                <li>Friday</li>
+                <li>Saturday</li>
+            </ul>
+
+            <ul class="daynumbers">
+                <li>14</li>
+                <li>15</li>
+                <li>16</li>
+                <li>17</li>
+                <li>18</li>
+                <li>19</li>
+                <li>20</li>
+            </ul>
+        </div>
+
+        <div id="timeslots" class="timeslots-container">
+            <ul class="timeslots">
+                <li>0000</li>
+                <li>0100</li>
+                <li>0200</li>
+                <li>0300</li>
+                <li>0400</li>
+                <li>0500</li>
+                <li>0600</li>
+                <li>0700</li>
+                <li>0800</li>
+                <li>0900</li>
+                <li>1000</li>
+                <li>1100</li>
+                <li>1200</li>
+                <li>1300</li>
+                <li>1400</li>
+                <li>1500</li>
+                <li>1600</li>
+                <li>1700</li>
+                <li>1800</li>
+                <li>1900</li>
+                <li>2000</li>
+                <li>2100</li>
+                <li>2200</li>
+                <li>2300</li>
+            </ul>
+        </div>
+
+        <div id="event-container" class="event-container">
+            <div class="slot slot-1">
+                <div class="event-status">
+                </div>
+                <span>Event A</span>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="/index.js"></script>
+    <script>
+     loadEvents();
+    </script>
+</body>
+</html>
